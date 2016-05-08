@@ -1,6 +1,8 @@
 # continuations-demo
 An internal demo of the Continuations feature for Trineo team members
 
+![Happy Matt Damon](https://s-media-cache-ak0.pinimg.com/236x/6f/2d/e1/6f2de1f09fd4c32f91b9f6d50f51437f.jpg)
+
 ## Example books by ISBN
 * 9780321205681 - User Stories Applied by Mike Cohn
 * 9780321125217 - Domain Driven Design by Eric Evans
