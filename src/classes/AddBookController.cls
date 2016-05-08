@@ -73,9 +73,6 @@ public with sharing class AddBookController {
             ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR,'General Response: ' + generalResponse.getStatusCode() + generalResponse.getStatus()));
         }
 
-        // One more time for good measure
-        //http.send(buildHttpRequest(String.format(GOOGLE_BOOKS_ENDPOINT, new String[] {'author:' + EncodingUtil.urlEncode(searchText, 'UTF-8')})));
-
         // What's the duration?
         this.duration = Datetime.now().getTime() - this.startTime.getTime();
     }
@@ -168,9 +165,6 @@ public with sharing class AddBookController {
         
         // you cand add two more callouts here and store their requestLabels in the controller state as well.
         this.generalRequestLabel = cont.addHttpRequest(generalSearchRequest());
-
-        // and again for good measure
-        //cont.addHttpRequest(buildHttpRequest(String.format(GOOGLE_BOOKS_ENDPOINT, new String[] {'author:' + EncodingUtil.urlEncode(searchText, 'UTF-8')})));
         
         // Return the continuation to tell VF that its waiting for a continuation.
         return cont;
