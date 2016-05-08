@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>AddBookController</members>
+        <members>GoogleBooksAccessInfo</members>
+        <members>GoogleBooksEpub</members>
+        <members>GoogleBooksImageLinks</members>
+        <members>GoogleBooksIndustryIdentifier</members>
+        <members>GoogleBooksItem</members>
+        <members>GoogleBooksPdf</members>
+        <members>GoogleBooksResult</members>
+        <members>GoogleBooksSaleInfo</members>
+        <members>GoogleBooksSearchInfo</members>
+        <members>GoogleBooksVolumeInfo</members>
+        <name>ApexClass</name>
+    </types>
+    <types>
+        <members>AddBook</members>
+        <name>ApexPage</name>
+    </types>
+    <version>34.0</version>
+</Package>
