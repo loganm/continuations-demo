@@ -27,6 +27,9 @@ public with sharing class AddBookController {
     public Integer asyncSearchCounter { get; set; }
     public Integer asyncCallbackCounter { get; set; }
 
+    public Datetime startTime { get; set; }
+    public Decimal duration { get; set; }
+
 
     public AddBookController() {
         syncSearchCounter = 0;
@@ -44,24 +47,37 @@ public with sharing class AddBookController {
      */
     public void synchronousSearch() {
 
-        // Lets increment a counter to see how many times this runs if a go street fighter on the search button.
+        // Lets increment a counter to see how many times this runs if I go street fighter on the search button.
         this.syncSearchCounter++;
 
+        // Measure duration of request
+        this.startTime = Datetime.now();
+
         Http http = new Http();
-        String endpoint = String.format(GOOGLE_BOOKS_ENDPOINT, new String[] {'isbn:'+searchText});
-        
-        // This is a blocking method call, which means we're spending time and resources waiting.
-        HttpResponse response = http.send(isbnSearchRequest());
         
         // We read the response, update the controller state and either reload or rerender the page.
-        if(response.getStatusCode() == 200) {
-            isbnSearchResult = parseResponse(response.getBody());
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.CONFIRM,'Synchronous Response Received ' + Datetime.now()));
+        HttpResponse isbnResponse = http.send(isbnSearchRequest()); // This is a blocking method call, which means we're spending time and resources waiting.
+        if(isbnResponse.getStatusCode() == 200) {
+            isbnSearchResult = parseResponse(isbnResponse.getBody());
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.CONFIRM,'ISBN Synchronous Response Received ' + Datetime.now()));
+        } else { // sumting wong, wi too lo, bang ding au
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR,'ISBN Response: ' + isbnResponse.getStatusCode() + isbnResponse.getStatus()));
         }
-        else {
-            // sumting wong, wi too lo, bang ding au
-            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR,'Response: ' + response.getStatusCode() + response.getStatus()));
+        
+        // We get to do it all over again.
+        HttpResponse generalResponse = http.send(generalSearchRequest());
+        if(generalResponse.getStatusCode() == 200) {
+            generalSearchResult = parseResponse(generalResponse.getBody());
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.CONFIRM,'General Synchronous Response Received ' + Datetime.now()));
+        } else { // fire in the hole
+            ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.ERROR,'General Response: ' + generalResponse.getStatusCode() + generalResponse.getStatus()));
         }
+
+        // One more time for good measure
+        //http.send(buildHttpRequest(String.format(GOOGLE_BOOKS_ENDPOINT, new String[] {'author:' + EncodingUtil.urlEncode(searchText, 'UTF-8')})));
+
+        // What's the duration?
+        this.duration = Datetime.now().getTime() - this.startTime.getTime();
     }
     
 
@@ -134,8 +150,11 @@ public with sharing class AddBookController {
      */
     public Object asynchronousSearch() {
 
-        // Lets increment a counter to see how many times this runs if a go street fighter on the search button.
+        // Lets increment a counter to see how many times this runs if I go street fighter on the search button.
         this.asyncSearchCounter++;
+
+        // Measure duration of request
+        this.startTime = Datetime.now();
     
         // Creates a continuation with a 60 second timeout
         Continuation cont = new Continuation(60);
@@ -149,6 +168,9 @@ public with sharing class AddBookController {
         
         // you cand add two more callouts here and store their requestLabels in the controller state as well.
         this.generalRequestLabel = cont.addHttpRequest(generalSearchRequest());
+
+        // and again for good measure
+        //cont.addHttpRequest(buildHttpRequest(String.format(GOOGLE_BOOKS_ENDPOINT, new String[] {'author:' + EncodingUtil.urlEncode(searchText, 'UTF-8')})));
         
         // Return the continuation to tell VF that its waiting for a continuation.
         return cont;
@@ -166,7 +188,7 @@ public with sharing class AddBookController {
      */
     public Object handleCallback() {
 
-        // Lets increment a counter to see how many times this runs if a go street fighter on the search button.
+        // Lets increment a counter to see how many times this runs if I go street fighter on the search button.
         this.asyncCallbackCounter++;
         
         // Handle the response the same way as synchronous call
@@ -178,6 +200,9 @@ public with sharing class AddBookController {
         
         // Inform us that the results were fetched asynchronously
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.CONFIRM,'Asynchronous Response Received ' + Datetime.now()));
+
+        // What's the duration?
+        this.duration = Datetime.now().getTime() - this.startTime.getTime();
         
         // Return null to re-render the VF page
         return null;

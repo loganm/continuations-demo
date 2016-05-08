@@ -20,6 +20,7 @@ An internal demo of the Continuations feature for Trineo team members
 * Up to 3 continuations can be changed
 * Each continuation gets 120 seconds to complete
 * Does not contribute to the org wide 10 long running callouts limit. (long running is > 5s)
+* Can be used in JS Remoting
     
 ### Cons 
 * Controller view state is limited to 80kb, because the view state is serialised when the continuation is called, and deserialised when the callback is called. Use transient keyword to limit held view state.
@@ -27,3 +28,9 @@ An internal demo of the Continuations feature for Trineo team members
 * Max HTTP Response Size - 1MB
 * Does not get around uncommitted work pending error
 * Mixing synchronous and asynchronous could be a world of hurt
+* Requires rerender on commandButton, will not rerender the whole page
+
+## Documentation
+* https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_continuation_overview.htm
+* https://developer.salesforce.com/docs/atlas.en-us.apexcode.meta/apexcode/apex_continuation_process.htm
+* https://developer.salesforce.com/blogs/developer-relations/2015/02/apex-continuations-asynchronous-callouts-visualforce-pages.html
