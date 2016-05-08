@@ -108,9 +108,6 @@ public with sharing class AddBookController {
         // you cand add two more callouts here and store their requestLabels in the controller state as well.
         //this.generalRequestLabel = cont.addHttpRequest(generalSearchRequest());
         
-        // Add a page message to confirm the continuation was enqueued. But we won't actually see this message.
-        ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.INFO,'Asynchronous Message Enqueued ' + Datetime.now()));
-        
         // Return the continuation to tell VF that its waiting for a continuation.
         return cont;
         
@@ -144,17 +141,25 @@ public with sharing class AddBookController {
     
     IN SUMMARY
     
+    When to use:
+    
+    - VF can be sped up by doing multiple callouts in parallel
+    - The callout is known to be long running
+    - Many users are expected to be thrashing the page simultaneously
+    - When multiple callouts must be performed in series
+    
     Pros:
     
     - Up to 3 http request can be made simultaneously in a single continuation
     - Up to 3 continuations can be changed
     - Each continuation gets 120 seconds to complete
-    - 
+    - Does not contribute to the org wide 10 long running callouts limit. (long running is > 5s)
     
     Cons: 
     
-    - Controller view state is limited to 80kb, because super secret salesforce reasons.
-    - 
+    - Controller view state is limited to 80kb, because the view state is serialised when the continuation is called, and deserialised when the callback is called. Use transient keyword to limit held view state.
+    - Max HTTP Post Size - 1MB
+    - Max HTTP Response Size - 1MB
     
     ***/
 }
