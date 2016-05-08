@@ -25,3 +25,5 @@ An internal demo of the Continuations feature for Trineo team members
 * Controller view state is limited to 80kb, because the view state is serialised when the continuation is called, and deserialised when the callback is called. Use transient keyword to limit held view state.
 * Max HTTP Post Size - 1MB
 * Max HTTP Response Size - 1MB
+* Does not get around uncommitted work pending error
+* Mixing synchronous and asynchronous could be a world of hurt

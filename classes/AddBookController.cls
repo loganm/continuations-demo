@@ -4,19 +4,36 @@
  */
 public with sharing class AddBookController {
     
+
     // A template for building a Google Books REST API endpoint
     private static final String GOOGLE_BOOKS_ENDPOINT = 'https://www.googleapis.com/books/v1/volumes?q={0}';
     
+
     // Will be explained later
     private String isbnRequestLabel;
-    //private String generalRequestLabel;
+    private String generalRequestLabel;
     
+
     // A term to search for, provided by the user
     public String searchText { get; set; }
     
+
     // Results of the search
     public transient GoogleBooksResult isbnSearchResult { get; private set; }
-    //public transient GoogleBooksResult generalSearchResult { get; private set; }
+    public transient GoogleBooksResult generalSearchResult { get; private set; }
+
+
+    public Integer syncSearchCounter { get; set; }
+    public Integer asyncSearchCounter { get; set; }
+    public Integer asyncCallbackCounter { get; set; }
+
+
+    public AddBookController() {
+        syncSearchCounter = 0;
+        asyncSearchCounter = 0;
+        asyncCallbackCounter = 0;
+    }
+
 
     /**
      * Synchronous http callout in visualforce. The way we're most familiar with.
@@ -26,6 +43,10 @@ public with sharing class AddBookController {
      *           - Chained callouts happen in the same thread. Overall time limit applies.
      */
     public void synchronousSearch() {
+
+        // Lets increment a counter to see how many times this runs if a go street fighter on the search button.
+        this.syncSearchCounter++;
+
         Http http = new Http();
         String endpoint = String.format(GOOGLE_BOOKS_ENDPOINT, new String[] {'isbn:'+searchText});
         
@@ -43,18 +64,32 @@ public with sharing class AddBookController {
         }
     }
     
+
+    /** 
+     * Generates a request to search for books using the searchText as an ISBN number.
+     * This request will return 0 or 1 matches.
+     */
     public HttpRequest isbnSearchRequest() {
         return buildHttpRequest(String.format(GOOGLE_BOOKS_ENDPOINT, new String[] {'isbn:' + EncodingUtil.urlEncode(searchText, 'UTF-8')}));
+
+        // Want to see a strange error?
+        // Remove the urlencoding of the endpoint, and search for a term with spaces in it
+        // Google returns a 400 bad request
+        // Salesforce blows up
     }
     
+
+    /** 
+     * Generates a request to search for books using the searchText as an general search term.
+     * This request can return 0 to many matches.
+     */
     public HttpRequest generalSearchRequest() {
         return buildHttpRequest(String.format(GOOGLE_BOOKS_ENDPOINT, new String[] {EncodingUtil.urlEncode(searchText, 'UTF-8')}));
-        // Can cause error by not encoding the searchTerm if it has a space. 400 response.
     }
     
+
     /**
-     * Builds an http request that's suitable for sending to google.
-     *
+     * Wraps an enpoint URL in a HttpRequest with nature required to be sent to Google.
      * Nothing to see here, move along, move along.
      */
     public HttpRequest buildHttpRequest(String endpoint) {
@@ -71,29 +106,36 @@ public with sharing class AddBookController {
         request.setEndpoint(endpoint);
         request.setMethod('GET');
         request.setHeader('X-Forwarded-For', clientIp);
-        
+
         return request;
     }
     
+
     /**
-     * Turns the JSON response from Google, into a DataStructure we can work with.
+     * Turns a JSON response body from Google into a data structure we can work with.
      */
     public GoogleBooksResult parseResponse(String googleBooksResultJSON) {
         JSONParser parser = JSON.createParser(googleBooksResultJSON);
         return (GoogleBooksResult)parser.readValueAs(GoogleBooksResult.class);
     }
     
+
     /**
      * Kicks off a Continuation which takes care of the callout for us. The method ends before the continuation completes.
+     *
      * Advantages: - Unlimited callouts (doesn't incur the org wide 10 long running http callout limit)
      *             - up to 3 callouts can be requested in the same continuation
      *             - The 3 callouts happen in parallel, callback is called as soon as the longest callback is complete.
      *             - Can chain more continuations on the back of a callback
+     *
      * Disadvantages: - Only works from VF context.
      *                - up to 3 callouts can be requested in the same continuation
      *                - 1MB response size limit.
      */
     public Object asynchronousSearch() {
+
+        // Lets increment a counter to see how many times this runs if a go street fighter on the search button.
+        this.asyncSearchCounter++;
     
         // Creates a continuation with a 60 second timeout
         Continuation cont = new Continuation(60);
@@ -106,28 +148,33 @@ public with sharing class AddBookController {
         this.isbnRequestLabel = cont.addHttpRequest(isbnSearchRequest());
         
         // you cand add two more callouts here and store their requestLabels in the controller state as well.
-        //this.generalRequestLabel = cont.addHttpRequest(generalSearchRequest());
+        this.generalRequestLabel = cont.addHttpRequest(generalSearchRequest());
         
         // Return the continuation to tell VF that its waiting for a continuation.
         return cont;
-        
-       // The VF page will be blocked and will wait for the continuation to complete.
     }
     
+
     /**
      * Is called by the continuation server when the http callout is completed.
+     *
+     * The callback is considered a new apex transaction, so if you want to do 
+     *
      * Can return: - A continuation to chain another continuation.
      *             - A PageReference to redirect to a new page (use page parameters to pass details of the continuation response)
      *             - null to rerender the page
      */
     public Object handleCallback() {
+
+        // Lets increment a counter to see how many times this runs if a go street fighter on the search button.
+        this.asyncCallbackCounter++;
         
         // Handle the response the same way as synchronous call
         // EXCEPT we have to get the HttpResponse object using the label that we stored earlier
         isbnSearchResult = parseResponse(Continuation.getResponse(this.isbnRequestLabel).getBody());
         
         // Handle a second response using its own requestLabel
-        //generalSearchResult = parseResponse(Continuation.getResponse(this.generalRequestLabel).getBody());
+        generalSearchResult = parseResponse(Continuation.getResponse(this.generalRequestLabel).getBody());
         
         // Inform us that the results were fetched asynchronously
         ApexPages.addMessage(new ApexPages.Message(ApexPages.Severity.CONFIRM,'Asynchronous Response Received ' + Datetime.now()));
@@ -135,31 +182,4 @@ public with sharing class AddBookController {
         // Return null to re-render the VF page
         return null;
     }
-    
-    
-    /***
-    
-    IN SUMMARY
-    
-    When to use:
-    
-    - VF can be sped up by doing multiple callouts in parallel
-    - The callout is known to be long running
-    - Many users are expected to be thrashing the page simultaneously
-    - When multiple callouts must be performed in series
-    
-    Pros:
-    
-    - Up to 3 http request can be made simultaneously in a single continuation
-    - Up to 3 continuations can be changed
-    - Each continuation gets 120 seconds to complete
-    - Does not contribute to the org wide 10 long running callouts limit. (long running is > 5s)
-    
-    Cons: 
-    
-    - Controller view state is limited to 80kb, because the view state is serialised when the continuation is called, and deserialised when the callback is called. Use transient keyword to limit held view state.
-    - Max HTTP Post Size - 1MB
-    - Max HTTP Response Size - 1MB
-    
-    ***/
 }
