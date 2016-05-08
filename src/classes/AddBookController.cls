@@ -207,4 +207,59 @@ public with sharing class AddBookController {
         // Return null to re-render the VF page
         return null;
     }
+
+
+    public void timeForSync() {
+
+        this.startTime = Datetime.now();
+
+        Http http = new Http();
+
+        HttpRequest request1 = new HttpRequest();
+        request1.setEndpoint('https://fathomless-bayou-16905.herokuapp.com');
+        request1.setMethod('GET');
+        http.send(request1); 
+
+        HttpRequest request2 = new HttpRequest();
+        request2.setEndpoint('https://fathomless-bayou-16905.herokuapp.com');
+        request2.setMethod('GET');
+        http.send(request2); 
+
+        HttpRequest request3 = new HttpRequest();
+        request3.setEndpoint('https://fathomless-bayou-16905.herokuapp.com');
+        request3.setMethod('GET');
+        http.send(request3);
+
+        this.duration = Datetime.now().getTime() - this.startTime.getTime();
+    }
+
+    public Object timeForAsyncStart() {
+        
+        this.startTime = Datetime.now();
+
+        Continuation cont = new Continuation(60);
+        cont.continuationMethod = 'timeForAsyncCallback';
+
+        HttpRequest request1 = new HttpRequest();
+        request1.setEndpoint('https://fathomless-bayou-16905.herokuapp.com');
+        request1.setMethod('GET');
+        cont.addHttpRequest(request1); 
+
+        HttpRequest request2 = new HttpRequest();
+        request2.setEndpoint('https://fathomless-bayou-16905.herokuapp.com');
+        request2.setMethod('GET');
+        cont.addHttpRequest(request2); 
+
+        HttpRequest request3 = new HttpRequest();
+        request3.setEndpoint('https://fathomless-bayou-16905.herokuapp.com');
+        request3.setMethod('GET');
+        cont.addHttpRequest(request3);
+
+        return cont;
+    }
+
+    public Object timeForAsyncCallback() {
+        this.duration = Datetime.now().getTime() - this.startTime.getTime();
+        return null;
+    }
 }

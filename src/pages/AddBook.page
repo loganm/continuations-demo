@@ -1,49 +1,57 @@
 <apex:page controller="AddBookController" showHeader="true" sidebar="true">
     
-    <apex:pageMessages id="pageMessages" />
-    
-    <apex:pageBlock title="Add Book to Library">
-    
-        <apex:pageBlockButtons location="top">
-            <apex:form >
+    <apex:form >
+
+        <apex:pageMessages id="pageMessages" />
+        
+        <apex:pageBlock title="Add Book to Library">
+        
+            <apex:pageBlockButtons location="top">
                 <apex:outputLabel id="labelSearchText" value="ISBN:" for="searchText" />
                 <apex:inputText id="inputSearchText" value="{!searchText}" />
                 <apex:commandButton value="Synchronous Search" action="{!synchronousSearch}" status="statusThing" rerender="pageMessages, isbnResultsTable, generalResultsTable, stats" />
                 <apex:commandButton value="Asynchronous Search" action="{!asynchronousSearch}" status="statusThing" rerender="pageMessages, isbnResultsTable, generalResultsTable, stats" />
                 <apex:actionStatus startText=" (doing stuff...)" stopText=" (not doing stuff...)" id="statusThing" />
-            </apex:form>
-        </apex:pageBlockButtons>
-        
-        <apex:pageBlockSection columns="2">
-            <apex:pageBlockSection title="ISBN Search Results" columns="1">
-                <apex:pageBlockTable id="isbnResultsTable" title="Search Results" value="{!isbnSearchResult.items}" var="item">
-                    <apex:column headerValue="Title" value="{!item.volumeInfo.title}" />
-                    <apex:column headerValue="Subtitle" value="{!item.volumeInfo.subtitle}" />
-                    <apex:column headerValue="Rating" value="{!item.volumeInfo.averageRating}" />
-                    <apex:column headerValue="Thumbnail">
-                        <apex:image value="{!item.volumeInfo.imageLinks.smallThumbnail}" />
-                    </apex:column>
-                </apex:pageBlockTable>
-            </apex:pageBlockSection>
-            <apex:pageBlockSection title="General Search Results" columns="1">
-                <apex:pageBlockTable id="generalResultsTable" title="Search Results" value="{!generalSearchResult.items}" var="item">
-                    <apex:column headerValue="Title" value="{!item.volumeInfo.title}" />
-                    <apex:column headerValue="Subtitle" value="{!item.volumeInfo.subtitle}" />
-                    <apex:column headerValue="Rating" value="{!item.volumeInfo.averageRating}" />
-                    <apex:column headerValue="Thumbnail">
-                        <apex:image value="{!item.volumeInfo.imageLinks.smallThumbnail}" />
-                    </apex:column>
-                </apex:pageBlockTable>
-            </apex:pageBlockSection>
-        </apex:pageBlockSection>
-        
-    </apex:pageBlock>
+            </apex:pageBlockButtons>
+            
+            <apex:pageBlockSection columns="2">
 
-    <apex:outputPanel id="stats">
-        <p>syncSearchCounter: {!syncSearchCounter}</p>
-        <p>asyncSearchCounter: {!asyncSearchCounter}</p>
-        <p>asyncCallbackCounter: {!asyncCallbackCounter}</p>
-        <p>duration: {!duration}</p>
-    </apex:outputPanel>
+                <apex:pageBlockSection title="ISBN Search Results" columns="1">
+                    <apex:pageBlockTable id="isbnResultsTable" title="Search Results" value="{!isbnSearchResult.items}" var="item">
+                        <apex:column headerValue="Title" value="{!item.volumeInfo.title}" />
+                        <apex:column headerValue="Subtitle" value="{!item.volumeInfo.subtitle}" />
+                        <apex:column headerValue="Rating" value="{!item.volumeInfo.averageRating}" />
+                        <apex:column headerValue="Thumbnail">
+                            <apex:image value="{!item.volumeInfo.imageLinks.smallThumbnail}" />
+                        </apex:column>
+                    </apex:pageBlockTable>
+                </apex:pageBlockSection>
+
+                <apex:pageBlockSection title="General Search Results" columns="1">
+                    <apex:pageBlockTable id="generalResultsTable" title="Search Results" value="{!generalSearchResult.items}" var="item">
+                        <apex:column headerValue="Title" value="{!item.volumeInfo.title}" />
+                        <apex:column headerValue="Subtitle" value="{!item.volumeInfo.subtitle}" />
+                        <apex:column headerValue="Rating" value="{!item.volumeInfo.averageRating}" />
+                        <apex:column headerValue="Thumbnail">
+                            <apex:image value="{!item.volumeInfo.imageLinks.smallThumbnail}" />
+                        </apex:column>
+                    </apex:pageBlockTable>
+                </apex:pageBlockSection>
+
+            </apex:pageBlockSection>
+            
+        </apex:pageBlock>
+
+        <apex:outputPanel id="stats">
+            <p>syncSearchCounter: {!syncSearchCounter}</p>
+            <p>asyncSearchCounter: {!asyncSearchCounter}</p>
+            <p>asyncCallbackCounter: {!asyncCallbackCounter}</p>
+            <p>duration: {!duration}</p>
+        </apex:outputPanel>
+
+        <apex:commandButton value="Synchronous Timer" action="{!timeForSync}" status="statusThing" rerender="stats" />
+        <apex:commandButton value="Asynchronous Timer" action="{!timeForAsyncStart}" status="statusThing" rerender="stats" />
+
+    </apex:form>
     
 </apex:page>
