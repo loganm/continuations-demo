@@ -1,0 +1,10 @@
+apex-scripts/
+deploy/
+*DS_Store
+config/
+debug/
+*.sublime-project
+*.sublime-settings
+*.sublime-workspace
+*.log
+*.sh
