@@ -2,9 +2,9 @@ Continuations Demo
 =====================
 An internal demo of the Continuations feature for Trineo team members
 
-<a href="https://githubsfdeploy.herokuapp.com?owner=loganm&repo=continuations-demo">
 ![Happy Matt Damon](https://s-media-cache-ak0.pinimg.com/236x/6f/2d/e1/6f2de1f09fd4c32f91b9f6d50f51437f.jpg)
 
+<a href="https://githubsfdeploy.herokuapp.com?owner=loganm&repo=continuations-demo">
   <img alt="Deploy to Salesforce" src="https://raw.githubusercontent.com/afawcett/githubsfdeploy/master/src/main/webapp/resources/img/deploy.png">
 </a>
 
